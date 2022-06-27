@@ -1,4 +1,7 @@
-﻿using HealthChecks.UI.Client;
+﻿using Duende.IdentityServer.AspNetIdentity;
+using Duende.IdentityServer.Services;
+
+using HealthChecks.UI.Client;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -15,6 +18,7 @@ using Project4.STS.Identity.Configuration.Constants;
 using Project4.STS.Identity.Configuration.Interfaces;
 using Project4.STS.Identity.Helpers;
 using Project4.STS.Identity.Rules;
+using Project4.STS.Identity.Services;
 
 using Skoruba.Duende.IdentityServer.Shared.Configuration.Helpers;
 
@@ -111,7 +115,8 @@ namespace Project4.STS.Identity
         public virtual void RegisterAuthentication(IServiceCollection services)
         {
             services.AddAuthenticationServices<AdminIdentityDbContext, UserIdentity, UserIdentityRole>(Configuration);
-            services.AddIdentityServer<IdentityServerConfigurationDbContext, IdentityServerPersistedGrantDbContext, UserIdentity>(Configuration);
+            services.AddIdentityServer<IdentityServerConfigurationDbContext, IdentityServerPersistedGrantDbContext, UserIdentity>(Configuration)
+                .AddProfileService<ProfileService>();
         }
 
         public virtual void RegisterAuthorization(IServiceCollection services)
