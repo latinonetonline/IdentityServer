@@ -1,25 +1,33 @@
-﻿using Duende.IdentityServer.Models;
-using Duende.IdentityServer.Services;
+﻿using Duende.IdentityServer.AspNetIdentity;
+using Duende.IdentityServer.Models;
 
 using IdentityModel;
+
+using Microsoft.AspNetCore.Identity;
+
+using Project4.Admin.EntityFramework.Shared.Entities.Identity;
 
 using System.Threading.Tasks;
 
 namespace Project4.STS.Identity.Services
 {
-    public class ProfileService : IProfileService
+    public class ProfileService : ProfileService<UserIdentity>
     {
-        public ProfileService() { }
-        public Task GetProfileDataAsync(ProfileDataRequestContext context)
+        public ProfileService(UserManager<UserIdentity> userManager, IUserClaimsPrincipalFactory<UserIdentity> claimsFactory) : base(userManager, claimsFactory)
         {
-            var roleClaims = context.Subject.FindAll(JwtClaimTypes.Role);
-            context.IssuedClaims.AddRange(roleClaims);
-            return Task.CompletedTask;
         }
 
-        public Task IsActiveAsync(IsActiveContext context)
+        public override async Task GetProfileDataAsync(ProfileDataRequestContext context)
         {
-            return Task.CompletedTask;
+            await base.GetProfileDataAsync(context);
+
+            var roleClaims = context.Subject.FindAll(JwtClaimTypes.Role);
+            context.IssuedClaims.AddRange(roleClaims);
+        }
+
+        public override Task IsActiveAsync(IsActiveContext context)
+        {
+            return base.IsActiveAsync(context);
         }
     }
 }
