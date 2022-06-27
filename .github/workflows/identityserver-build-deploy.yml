@@ -1,0 +1,67 @@
+name: IdentityServer Build And Deploy
+
+on:
+  push:
+    paths-ignore:
+      - 'Project4/src/Project4.Admin/**'
+      - 'Project4/src/Project4.Admin.Api/**'
+      - '.github/workflows/**'
+    branches: [ main ]
+
+    
+  workflow_dispatch:
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v2
+      with:
+        dotnet-version: 6.0.x
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet build 'Project4/src/Project4.STS.Identity/Project4.STS.Identity.csproj' -c Release --no-restore
+    
+    - name: Publish
+      run: dotnet publish 'Project4/src/Project4.STS.Identity/Project4.STS.Identity.csproj' -c Release -o app/build
+
+
+    - name: Upload a Build Artifact
+      uses: actions/upload-artifact@v3.1.0
+      with:
+         name: identityserver-drop
+         path: app/build
+
+
+  deploy:
+    needs: build
+    runs-on: self-hosted
+
+    steps:
+    - name: Download a Build Artifact IDS
+      uses: actions/download-artifact@v3.0.0
+      with:
+        # Artifact name
+        name: identityserver-drop
+        # Destination path
+        path: /var/www/ids.latinonet.online
+
+    - uses: microsoft/variable-substitution@v1 
+      with:
+          files: '/var/www/ids.latinonet.online/appsettings.json'
+      env:
+          ConnectionStrings.ConfigurationDbConnection: ${{ secrets.CONNECTION_STRING }}
+          ConnectionStrings.PersistedGrantDbConnection: ${{ secrets.CONNECTION_STRING }}
+          ConnectionStrings.IdentityDbConnection: ${{ secrets.CONNECTION_STRING }}
+          ConnectionStrings.DataProtectionDbConnection: ${{ secrets.CONNECTION_STRING }}
+ 
+        
+    # - name: Restart the app
+    #   run: |
+    #       export XDG_RUNTIME_DIR=/run/user/$(id -u)
+    #       systemctl --user restart identityserver.service
