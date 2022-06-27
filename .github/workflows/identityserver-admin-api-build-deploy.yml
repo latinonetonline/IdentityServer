@@ -64,7 +64,7 @@ jobs:
           ConnectionStrings.DataProtectionDbConnection: ${{ secrets.CONNECTION_STRING }}
 
         
-    # - name: Restart the app
-    #   run: |
-    #       export XDG_RUNTIME_DIR=/run/user/$(id -u)
-    #       systemctl --user restart identityserver-admin-api.service
+    - name: Restart the app
+      run: |
+          export XDG_RUNTIME_DIR=/run/user/$(id -u)
+          systemctl --user restart ids-admin-api.latinonet.online.service
