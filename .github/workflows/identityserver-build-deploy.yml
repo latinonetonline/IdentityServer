@@ -59,6 +59,9 @@ jobs:
           ConnectionStrings.PersistedGrantDbConnection: ${{ secrets.CONNECTION_STRING }}
           ConnectionStrings.IdentityDbConnection: ${{ secrets.CONNECTION_STRING }}
           ConnectionStrings.DataProtectionDbConnection: ${{ secrets.CONNECTION_STRING }}
+          ExternalProvidersConfiguration.GoogleClientSecret: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          ExternalProvidersConfiguration.GitHubClientSecret: ${{ secrets.GH_CLIENT_SECRET }}
+          ExternalProvidersConfiguration.AzureAdSecret: ${{ secrets.MICROSOFT_CLIENT_SECRET }}
  
         
     - name: Restart the app

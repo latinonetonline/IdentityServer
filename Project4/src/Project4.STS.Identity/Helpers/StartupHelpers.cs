@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Jan Škoruba. All Rights Reserved.
 // Licensed under the Apache License, Version 2.0.
 
+using Duende.IdentityServer;
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.EntityFramework.Storage;
 
@@ -388,22 +389,36 @@ namespace Project4.STS.Identity.Helpers
                 {
                     options.ClientId = externalProviderConfiguration.GitHubClientId;
                     options.ClientSecret = externalProviderConfiguration.GitHubClientSecret;
-                    options.CallbackPath = externalProviderConfiguration.GitHubCallbackPath;
+                    //options.CallbackPath = externalProviderConfiguration.GitHubCallbackPath;
                     options.Scope.Add("user:email");
                 });
             }
 
+            if (externalProviderConfiguration.UseGoogleProvider)
+            {
+                authenticationBuilder.AddGoogle("Google", options =>
+                {
+                    options.ClientId = externalProviderConfiguration.GoogleClientId;
+                    options.ClientSecret = externalProviderConfiguration.GoogleClientSecret;
+                });
+            }
+
+
             if (externalProviderConfiguration.UseAzureAdProvider)
             {
                 authenticationBuilder.AddMicrosoftIdentityWebApp(options =>
-                  {
-                      options.ClientSecret = externalProviderConfiguration.AzureAdSecret;
-                      options.ClientId = externalProviderConfiguration.AzureAdClientId;
-                      options.TenantId = externalProviderConfiguration.AzureAdTenantId;
-                      options.Instance = externalProviderConfiguration.AzureInstance;
-                      options.Domain = externalProviderConfiguration.AzureDomain;
-                      options.CallbackPath = externalProviderConfiguration.AzureAdCallbackPath;
-                  }, cookieScheme: null);
+                 {
+                     options.ClientSecret = externalProviderConfiguration.AzureAdSecret;
+                     options.ClientId = externalProviderConfiguration.AzureAdClientId;
+                     options.TenantId = externalProviderConfiguration.AzureAdTenantId;
+                     options.Instance = externalProviderConfiguration.AzureInstance;
+                     options.Domain = externalProviderConfiguration.AzureDomain;
+                     options.CallbackPath = externalProviderConfiguration.AzureAdCallbackPath;
+                     options.GetClaimsFromUserInfoEndpoint = true;
+                     options.Scope.Add("profile");
+                     options.Scope.Add("email");
+                      //options.ClaimActions.MapUniqueJsonKey("preferred_username", "email");
+                  }, cookieScheme: null, displayName: "Microsoft");
             }
         }
 

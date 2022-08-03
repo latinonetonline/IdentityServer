@@ -19,6 +19,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 using Project4.STS.Identity.Configuration;
@@ -419,9 +420,9 @@ namespace Project4.STS.Identity.Controllers
             ViewData["ReturnUrl"] = returnUrl;
             ViewData["LoginProvider"] = info.LoginProvider;
             var email = info.Principal.FindFirstValue(ClaimTypes.Email);
-            var userName = info.Principal.Identity.Name;
+            //var userName = info.Principal.Identity.Name;
 
-            return View("ExternalLoginConfirmation", new ExternalLoginConfirmationViewModel { Email = email, UserName = userName });
+            return View("ExternalLoginConfirmation", new ExternalLoginConfirmationViewModel { Email = email, UserName = email });
         }
 
         [HttpPost]
@@ -452,23 +453,30 @@ namespace Project4.STS.Identity.Controllers
 
             if (ModelState.IsValid)
             {
-                var user = new TUser
-                {
-                    UserName = model.UserName,
-                    Email = model.Email
-                };
 
-                var result = await _userManager.CreateAsync(user);
+                TUser user = await _userManager.Users.FirstOrDefaultAsync(x => x.Email.ToLower() == model.Email.ToLower());
+
+                if (user is null)
+                {
+                    user = new TUser
+                    {
+                        UserName = model.UserName,
+                        Email = model.Email
+                    };
+
+                    await _userManager.CreateAsync(user);
+                }
+
+
+
+                var result = await _userManager.AddLoginAsync(user, info);
                 if (result.Succeeded)
                 {
-                    result = await _userManager.AddLoginAsync(user, info);
-                    if (result.Succeeded)
-                    {
-                        await _signInManager.SignInAsync(user, isPersistent: false);
+                    await _signInManager.SignInAsync(user, isPersistent: false);
 
-                        return RedirectToLocal(returnUrl);
-                    }
+                    return RedirectToLocal(returnUrl);
                 }
+
 
                 AddErrors(result);
             }
