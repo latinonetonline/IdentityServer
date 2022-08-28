@@ -145,7 +145,7 @@ namespace Project4.STS.Identity.Controllers
 
             if (ModelState.IsValid)
             {
-                var user = await _userResolver.GetUserAsync(model.Username);
+                var user = await _userResolver.GetUserAsync(model.Email);
                 if (user != default(TUser))
                 {
                     var result = await _signInManager.PasswordSignInAsync(user.UserName, model.Password, model.RememberLogin, lockoutOnFailure: true);
@@ -191,7 +191,7 @@ namespace Project4.STS.Identity.Controllers
                         return View("Lockout");
                     }
                 }
-                await _events.RaiseAsync(new UserLoginFailureEvent(model.Username, "invalid credentials", clientId: context?.Client.ClientId));
+                await _events.RaiseAsync(new UserLoginFailureEvent(model.Email, "invalid credentials", clientId: context?.Client.ClientId));
                 ModelState.AddModelError(string.Empty, AccountOptions.InvalidCredentialsErrorMessage);
             }
 
@@ -289,34 +289,8 @@ namespace Project4.STS.Identity.Controllers
         {
             if (ModelState.IsValid)
             {
-                TUser user = null;
-                switch (model.Policy)
-                {
-                    case LoginResolutionPolicy.Email:
-                        try
-                        {
-                            user = await _userManager.FindByEmailAsync(model.Email);
-                        }
-                        catch (Exception ex)
-                        {
-                            // in case of multiple users with the same email this method would throw and reveal that the email is registered
-                            _logger.LogError("Error retrieving user by email ({0}) for forgot password functionality: {1}", model.Email, ex.Message);
-                            user = null;
-                        }
-                        break;
-                    case LoginResolutionPolicy.Username:
-                        try
-                        {
-                            user = await _userManager.FindByNameAsync(model.Username);
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError("Error retrieving user by userName ({0}) for forgot password functionality: {1}", model.Username, ex.Message);
-                            user = null;
-                        }
-                        break;
-                }
-
+                TUser user = await _userManager.FindByEmailAsync(model.Email);
+                
                 if (user == null || !await _userManager.IsEmailConfirmedAsync(user))
                 {
                     // Don't reveal that the user does not exist
@@ -627,7 +601,7 @@ namespace Project4.STS.Identity.Controllers
 
             var user = new TUser
             {
-                UserName = model.UserName,
+                UserName = model.Email,
                 Email = model.Email
             };
 
@@ -678,7 +652,6 @@ namespace Project4.STS.Identity.Controllers
         {
             var registerModel = new RegisterViewModel
             {
-                UserName = model.Email,
                 Email = model.Email,
                 Password = model.Password,
                 ConfirmPassword = model.ConfirmPassword
@@ -720,7 +693,8 @@ namespace Project4.STS.Identity.Controllers
                 {
                     EnableLocalLogin = local,
                     ReturnUrl = returnUrl,
-                    Username = context?.LoginHint,
+                    Email = context?.LoginHint,
+                    LoginResolutionPolicy = _loginConfiguration.ResolutionPolicy
                 };
 
                 if (!local)
@@ -761,15 +735,16 @@ namespace Project4.STS.Identity.Controllers
                 AllowRememberLogin = AccountOptions.AllowRememberLogin,
                 EnableLocalLogin = allowLocal && AccountOptions.AllowLocalLogin,
                 ReturnUrl = returnUrl,
-                Username = context?.LoginHint,
-                ExternalProviders = providers.ToArray()
+                Email = context?.LoginHint,
+                ExternalProviders = providers.ToArray(),
+                LoginResolutionPolicy = _loginConfiguration.ResolutionPolicy
             };
         }
 
         private async Task<LoginViewModel> BuildLoginViewModelAsync(LoginInputModel model)
         {
             var vm = await BuildLoginViewModelAsync(model.ReturnUrl);
-            vm.Username = model.Username;
+            vm.Email = model.Email;
             vm.RememberLogin = model.RememberLogin;
             return vm;
         }

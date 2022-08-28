@@ -5,12 +5,15 @@ using Duende.IdentityServer;
 using Duende.IdentityServer.Configuration;
 using Duende.IdentityServer.EntityFramework.Storage;
 
+using Mailjet.Client;
+
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.EntityFrameworkCore;
@@ -23,8 +26,11 @@ using Microsoft.Identity.Web;
 using Project4.STS.Identity.Configuration;
 using Project4.STS.Identity.Configuration.ApplicationParts;
 using Project4.STS.Identity.Configuration.Constants;
+using Project4.STS.Identity.Configuration.Email;
 using Project4.STS.Identity.Configuration.Interfaces;
 using Project4.STS.Identity.Helpers.Localization;
+
+using SendGrid;
 
 using Skoruba.Duende.IdentityServer.Admin.EntityFramework.Configuration.Configuration;
 using Skoruba.Duende.IdentityServer.Admin.EntityFramework.Configuration.MySql;
@@ -33,7 +39,9 @@ using Skoruba.Duende.IdentityServer.Admin.EntityFramework.Configuration.SqlServe
 using Skoruba.Duende.IdentityServer.Admin.EntityFramework.Helpers;
 using Skoruba.Duende.IdentityServer.Admin.EntityFramework.Interfaces;
 using Skoruba.Duende.IdentityServer.Shared.Configuration.Authentication;
+using Skoruba.Duende.IdentityServer.Shared.Configuration.Configuration.Email;
 using Skoruba.Duende.IdentityServer.Shared.Configuration.Configuration.Identity;
+using Skoruba.Duende.IdentityServer.Shared.Configuration.Email;
 
 using System;
 using System.Collections.Generic;
@@ -509,6 +517,25 @@ namespace Project4.STS.Identity.Helpers
                     default:
                         throw new NotImplementedException($"Health checks not defined for database provider {databaseProvider.ProviderType}");
                 }
+            }
+        }
+
+
+        public static void AddMailjetEmailSender(this IServiceCollection services, IConfiguration configuration)
+        {
+
+            MailjetConfiguration mailjetConfiguration = configuration.GetSection(nameof(MailjetConfiguration)).Get<MailjetConfiguration>();
+
+            if (mailjetConfiguration != null && !string.IsNullOrWhiteSpace(mailjetConfiguration.ApiKey))
+            {
+                services.AddSingleton((Func<IServiceProvider, IMailjetClient>)((IServiceProvider _) => new MailjetClient(mailjetConfiguration.ApiKey, mailjetConfiguration.ApiSecret)));
+
+                services.AddSingleton(mailjetConfiguration);
+                services.AddTransient<IEmailSender, MailjetEmailSender>();
+            }
+            else
+            {
+                services.AddSingleton<IEmailSender, LogEmailSender>();
             }
         }
     }

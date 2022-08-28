@@ -48,7 +48,8 @@ namespace Project4.STS.Identity
             services.AddDataProtection<IdentityServerDataProtectionDbContext>(Configuration);
 
             // Add email senders which is currently setup for SendGrid and SMTP
-            services.AddEmailSenders(Configuration);
+            //services.AddEmailSenders(Configuration);
+            services.AddMailjetEmailSender(Configuration);
 
             // Add services for authentication, including Identity model and external providers
             RegisterAuthentication(services);
