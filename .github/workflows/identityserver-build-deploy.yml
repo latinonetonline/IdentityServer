@@ -62,6 +62,8 @@ jobs:
           ExternalProvidersConfiguration.GoogleClientSecret: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           ExternalProvidersConfiguration.GitHubClientSecret: ${{ secrets.GH_CLIENT_SECRET }}
           ExternalProvidersConfiguration.AzureAdSecret: ${{ secrets.MICROSOFT_CLIENT_SECRET }}
+          MailjetConfiguration.ApiKey: ${{ secrets.MAILJET_API_KEY }}
+          MailjetConfiguration.ApiSecret: ${{ secrets.MAILJET_API_SECRET }}
  
         
     - name: Restart the app
