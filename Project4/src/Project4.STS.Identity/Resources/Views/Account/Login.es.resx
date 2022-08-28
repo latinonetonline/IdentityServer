@@ -124,7 +124,7 @@
     <value>E-mail</value>
   </data>
   <data name="ExternalLogin" xml:space="preserve">
-    <value>Inicio de sesión externo</value>
+    <value>Inicie sesión o registrese con sus redes sociales</value>
   </data>
   <data name="Forgot" xml:space="preserve">
     <value>Olvidé mi contraseña</value>
