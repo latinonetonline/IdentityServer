@@ -435,7 +435,8 @@ namespace Project4.STS.Identity.Controllers
                     user = new TUser
                     {
                         UserName = model.UserName,
-                        Email = model.Email
+                        Email = model.Email,
+                        EmailConfirmed = true
                     };
 
                     await _userManager.CreateAsync(user);
